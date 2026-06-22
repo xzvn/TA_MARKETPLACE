@@ -17,11 +17,13 @@
             </div>
 
             <nav class="flex-1 px-4 py-5 space-y-2">
+
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold bg-blue-600 text-white">
                     <span>▦</span>
                     <span>Dashboard</span>
                 </a>
+
 
                 <a href="{{ route('freelancer.jasa.index') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('freelancer.jasa.*') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-white' }}">
@@ -45,7 +47,7 @@
                     <span>💵</span>
                     <span>Earnings</span>
                 </a>
-                
+
                 <a href="#"
                     class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-white">
                     <span>👤</span>
@@ -82,7 +84,7 @@
                             Freelancer
                         </p>
                     </div>
-
+                    <x-notifikasi-bell />
                     <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
                         {{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}
                     </div>

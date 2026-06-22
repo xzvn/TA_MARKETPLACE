@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class Chat extends Model
 {
+    protected $casts = [
+        'waktu_kirim' => 'datetime',
+    ];
     use HasFactory;
 
     public function jasa()
@@ -38,6 +41,4 @@ class Chat extends Model
     {
         return $this->belongsTo(User::class, 'pengirim_id');
     }
-
-     
 }

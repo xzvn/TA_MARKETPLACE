@@ -59,7 +59,7 @@
                             </div>
 
                             <p class="text-xs text-slate-400">
-                                {{ $chat->created_at->format('d M Y H:i') }}
+                               {{ ($chat->waktu_kirim ?? $chat->created_at)->timezone('Asia/Jakarta')->format('H:i') }} WIB
                             </p>
                         </div>
 

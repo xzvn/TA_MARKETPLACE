@@ -64,6 +64,14 @@
                     class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-white">
                     <span>♙</span>
                     <span>Profile</span>
+
+                    <a href="{{ route('admin.jasa.index') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition
+   {{ request()->routeIs('admin.jasa.*') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-slate-100' }}">
+                        <span>🛠️</span>
+                        <span>Kelola Jasa</span>
+                    </a>
+
                 </a>
             </nav>
 
@@ -107,7 +115,7 @@
                     </div>
 
                     <button class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50">
-                        
+
                     </button>
 
                     @php

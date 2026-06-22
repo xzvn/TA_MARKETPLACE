@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Services\NotifikasiService;
 
 class FreelancerVerificationController extends Controller
 {
@@ -39,6 +40,15 @@ class FreelancerVerificationController extends Controller
             'catatan_admin' => null,
         ]);
 
+        NotifikasiService::kirim(
+            $verifikasi->id_freelancer,
+            'Verifikasi Freelancer Disetujui',
+            'Akun freelancer kamu telah disetujui oleh admin. Sekarang kamu dapat membuat dan menawarkan jasa.',
+            'system',
+            route('freelancer.jasa.index', [], false)
+        );
+
+
         return back()->with('success', 'Freelancer berhasil disetujui.');
     }
 
@@ -55,6 +65,14 @@ class FreelancerVerificationController extends Controller
             'tanggal_verifikasi' => now(),
             'catatan_admin' => $request->catatan_admin,
         ]);
+
+        NotifikasiService::kirim(
+            $verifikasi->id_freelancer,
+            'Verifikasi Freelancer Ditolak',
+            'Verifikasi akun freelancer kamu ditolak oleh admin. Silakan cek catatan admin dan ajukan ulang jika diperlukan.',
+            'system',
+            null
+        );
 
         return back()->with('success', 'Freelancer berhasil ditolak.');
     }

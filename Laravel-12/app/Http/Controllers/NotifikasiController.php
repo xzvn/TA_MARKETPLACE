@@ -31,7 +31,7 @@ class NotifikasiController extends Controller
             return redirect($notifikasi->url);
         }
 
-        return redirect()->route('notifikasi.index');
+        return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
     }
 
     public function readAll(Request $request): RedirectResponse
@@ -43,8 +43,6 @@ class NotifikasiController extends Controller
                 'dibaca_pada' => now(),
             ]);
 
-        return redirect()
-            ->route('notifikasi.index')
-            ->with('success', 'Semua notifikasi telah ditandai dibaca.');
+        return back()->with('success', 'Semua notifikasi sudah dibaca.');
     }
 }

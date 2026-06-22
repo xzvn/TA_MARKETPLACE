@@ -16,6 +16,25 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+                @auth
+                @php
+                $jumlahNotifikasiBaru = \App\Models\Notifikasi::where('id_user', auth()->id())
+                ->where('dibaca', false)
+                ->count();
+                @endphp
+
+                <x-nav-link :href="route('notifikasi.index')" :active="request()->routeIs('notifikasi.*')">
+                    <span class="relative">
+                        Notifikasi
+
+                        @if ($jumlahNotifikasiBaru > 0)
+                        <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                            {{ $jumlahNotifikasiBaru }}
+                        </span>
+                        @endif
+                    </span>
+                </x-nav-link>
+                @endauth
             </div>
 
             <!-- Settings Dropdown -->
@@ -43,7 +62,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
@@ -89,7 +108,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>

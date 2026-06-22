@@ -7,6 +7,9 @@ use App\Models\Dispute;
 use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Services\NotifikasiService;
+
+
 
 class DisputeController extends Controller
 {
@@ -76,9 +79,25 @@ class DisputeController extends Controller
             'tanggal_pengajuan' => now(),
         ]);
 
+        
         $pesanan->update([
             'status_pesanan' => 'dispute',
         ]);
+
+        NotifikasiService::kirimKeAdmin(
+            'Dispute Baru Masuk',
+            'Customer mengajukan dispute untuk pesanan #' . $pesanan->id . '.',
+            'dispute',
+            route('admin.disputes.index', [], false)
+        );
+
+        NotifikasiService::kirim(
+            $pesanan->id_freelancer,
+            'Pesanan Masuk Dispute',
+            'Customer mengajukan dispute untuk pesanan #' . $pesanan->id . '. Admin akan meninjau pesanan ini.',
+            'dispute',
+            route('freelancer.pesanan.show', $pesanan->id, false)
+        );
 
         return redirect()
             ->route('customer.order.show', $pesanan->id)

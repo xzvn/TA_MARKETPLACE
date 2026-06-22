@@ -42,7 +42,10 @@ class MarketplaceController extends Controller
             $query->where('kategori', $request->kategori);
         }
 
-        $jasa = $query->latest()->get();
+        $jasas = Jasa::with('freelancer')
+            ->where('status_jasa', 'active')
+            ->latest()
+            ->get();
 
         return view('customer.marketplace', compact('jasa'));
     }
@@ -58,7 +61,7 @@ class MarketplaceController extends Controller
             'freelancer.portofolios',
             'reviews.customer',
         ]);
-        
+
         $sudahChat = Chat::where('id_jasa', $jasa->id)
             ->where('id_customer', $request->user()->id)
             ->where('id_freelancer', $jasa->id_freelancer)

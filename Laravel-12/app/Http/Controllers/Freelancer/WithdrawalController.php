@@ -8,6 +8,8 @@ use App\Models\Withdrawal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\NotifikasiService;
+
 
 class WithdrawalController extends Controller
 {
@@ -85,6 +87,13 @@ class WithdrawalController extends Controller
             'status_withdrawal' => 'pending',
             'tanggal_pengajuan' => now(),
         ]);
+
+        NotifikasiService::kirimKeAdmin(
+            'Pengajuan Withdrawal Baru',
+            'Freelancer mengajukan pencairan saldo. Silakan periksa menu withdrawal.',
+            'withdrawal',
+            route('admin.withdrawals.index', [], false)
+        );
 
         return redirect()
             ->route('freelancer.withdrawals.index')

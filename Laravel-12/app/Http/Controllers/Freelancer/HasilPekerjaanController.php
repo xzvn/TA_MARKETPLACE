@@ -9,6 +9,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Revisi;
+use App\Models\Notifikasi;
+use App\Services\NotifikasiService;
+
 
 class HasilPekerjaanController extends Controller
 {
@@ -69,6 +72,14 @@ class HasilPekerjaanController extends Controller
             ]
         );
 
+        Notifikasi::create([
+            'id_user' => $pesanan->id_customer,
+            'judul' => 'Hasil Akhir Telah Dikirim',
+            'pesan' => 'Freelancer telah mengirim hasil akhir untuk pesanan #' . $pesanan->id . '. Silakan periksa dan berikan persetujuan atau revisi.',
+            'tipe' => 'hasil',
+            'url' => route('customer.order.show', $pesanan->id),
+        ]);
+
 
         $revisiTerbuka = Revisi::where('id_pesanan', $pesanan->id)
             ->whereIn('status_revisi', ['diajukan', 'diproses'])
@@ -106,6 +117,13 @@ class HasilPekerjaanController extends Controller
             'status_pesanan' => 'menunggu_approve',
         ]);
 
+        NotifikasiService::kirim(
+            $pesanan->id_customer,
+            'Hasil Akhir Telah Dikirim',
+            'Freelancer telah mengirim hasil akhir untuk pesanan #' . $pesanan->id . '. Silakan periksa hasil pekerjaan.',
+            'hasil',
+            route('customer.order.show', $pesanan->id, false)
+        );
         if ($pesanan->status_pesanan === 'revisi') {
             Revisi::where('id_pesanan', $pesanan->id)
                 ->where('status_revisi', 'diajukan')

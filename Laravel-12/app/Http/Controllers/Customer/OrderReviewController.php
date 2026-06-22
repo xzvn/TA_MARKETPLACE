@@ -8,6 +8,7 @@ use App\Models\ProgressPekerjaan;
 use App\Models\Revisi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Services\NotifikasiService;
 
 
 
@@ -64,15 +65,26 @@ class OrderReviewController extends Controller
             ]);
         }
 
+
+
         $pesanan->update([
             'status_pesanan' => 'selesai',
         ]);
+
+
+        NotifikasiService::kirim(
+            $pesanan->id_freelancer,
+            'Pesanan Disetujui',
+            'Customer telah menyetujui hasil pekerjaan untuk pesanan #' . $pesanan->id . '. Dana escrow telah dicairkan.',
+            'pembayaran',
+            route('freelancer.pesanan.show', $pesanan->id, false)
+        );
 
         return redirect()
             ->route('customer.order.show', $pesanan->id)
             ->with('success', 'Pekerjaan berhasil disetujui. Progress proyek menjadi 100%, pesanan selesai, dan dana escrow dicairkan.');
     }
-    
+
     public function revision(Request $request, Pesanan $pesanan): RedirectResponse
     {
         $this->authorizeCustomer($request, $pesanan);
@@ -125,11 +137,18 @@ class OrderReviewController extends Controller
             $pesanan->hasilPekerjaan->update([
                 'status_hasil' => 'revisi',
             ]);
-
             $pesanan->update([
                 'status_pesanan' => 'revisi',
                 'jumlah_revisi' => $pesanan->jumlah_revisi + 1,
             ]);
+
+            NotifikasiService::kirim(
+                $pesanan->id_freelancer,
+                'Permintaan Revisi Hasil Akhir',
+                'Customer meminta revisi hasil akhir untuk pesanan #' . $pesanan->id . '.',
+                'revisi',
+                route('freelancer.pesanan.show', $pesanan->id, false)
+            );
 
             return redirect()
                 ->route('customer.order.show', $pesanan->id)
@@ -177,6 +196,14 @@ class OrderReviewController extends Controller
             'status_pesanan' => 'revisi',
             'jumlah_revisi' => $pesanan->jumlah_revisi + 1,
         ]);
+
+        NotifikasiService::kirim(
+            $pesanan->id_freelancer,
+            'Permintaan Revisi Progress',
+            'Customer meminta revisi progress untuk pesanan #' . $pesanan->id . '.',
+            'revisi',
+            route('freelancer.pesanan.show', $pesanan->id, false)
+        );
 
         return redirect()
             ->route('customer.order.show', $pesanan->id)

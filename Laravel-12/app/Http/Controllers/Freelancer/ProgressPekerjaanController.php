@@ -9,6 +9,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Revisi;
+use App\Models\Notifikasi;
+use App\Services\NotifikasiService;
+
 
 class ProgressPekerjaanController extends Controller
 {
@@ -77,6 +80,15 @@ class ProgressPekerjaanController extends Controller
             'file_progress' => $fileProgressPath,
             'tanggal_upload' => now(),
         ]);
+
+
+        NotifikasiService::kirim(
+            $pesanan->id_customer,
+            'Progress Baru Diupload',
+            'Freelancer telah mengupload progress terbaru untuk pesanan #' . $pesanan->id . '.',
+            'progress',
+            route('customer.order.show', $pesanan->id, false)
+        );
 
         $revisiProgress = Revisi::where('id_pesanan', $pesanan->id)
             ->whereIn('status_revisi', ['diajukan', 'diproses'])

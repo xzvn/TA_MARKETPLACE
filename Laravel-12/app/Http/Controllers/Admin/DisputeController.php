@@ -8,6 +8,7 @@ use App\Models\Dispute;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\NotifikasiService;
 
 class DisputeController extends Controller
 {
@@ -96,6 +97,14 @@ class DisputeController extends Controller
             'tanggal_diproses' => now(),
         ]);
 
+        NotifikasiService::kirim(
+            [$dispute->id_customer, $dispute->id_freelancer],
+            'Dispute Diputuskan Refund',
+            'Admin memutuskan refund untuk pesanan #' . $dispute->id_pesanan . '. Dana dikembalikan kepada customer.',
+            'dispute',
+            null
+        );
+
         return redirect()
             ->route('admin.disputes.index', ['dispute' => $dispute->id])
             ->with('success', 'Dana berhasil dikembalikan kepada customer.');
@@ -134,9 +143,16 @@ class DisputeController extends Controller
             'tanggal_diproses' => now(),
         ]);
 
+        NotifikasiService::kirim(
+            [$dispute->id_customer, $dispute->id_freelancer],
+            'Dispute Selesai',
+            'Admin memutuskan dana pesanan #' . $dispute->id_pesanan . ' dicairkan kepada freelancer.',
+            'dispute',
+            null
+        );
+
         return redirect()
             ->route('admin.disputes.index', ['dispute' => $dispute->id])
             ->with('success', 'Dana berhasil dilepaskan kepada freelancer.');
     }
 }
-    

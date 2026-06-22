@@ -8,6 +8,7 @@ use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\NotifikasiService;
 
 class PaymentController extends Controller
 {
@@ -57,6 +58,22 @@ class PaymentController extends Controller
         $pesanan->update([
             'status_pesanan' => 'dibayar',
         ]);
+
+        NotifikasiService::kirim(
+            $pesanan->id_freelancer,
+            'Pesanan Baru Sudah Dibayar',
+            'Customer telah melakukan pembayaran untuk pesanan #' . $pesanan->id . '. Silakan mulai proses pekerjaan.',
+            'order',
+            route('freelancer.pesanan.show', $pesanan->id, false)
+        );
+
+        NotifikasiService::kirim(
+            $pesanan->id_customer,
+            'Pembayaran Berhasil',
+            'Pembayaran untuk pesanan #' . $pesanan->id . ' berhasil. Dana ditahan sementara oleh sistem escrow.',
+            'pembayaran',
+            route('customer.order.show', $pesanan->id, false)
+        );
 
         return redirect()
             ->route('customer.payment.show', $pesanan->id)

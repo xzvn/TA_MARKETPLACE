@@ -43,6 +43,7 @@
                         placeholder="Cari layanan..."
                         class="w-full h-9 rounded-md border-slate-300 text-sm focus:border-blue-500 focus:ring-blue-500">
                 </form>
+                   <x-notifikasi-bell />
             </div>
         </header>
 
@@ -54,6 +55,7 @@
                         <span>▦</span>
                         <span>Beranda</span>
                     </a>
+
 
                     <a href="{{ route('customer.order.index') }}"
                         class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium {{ request()->routeIs('customer.order.*') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-white' }}">
@@ -84,6 +86,8 @@
                         <span>⚙</span>
                         <span>Progress</span>
                     </a>
+
+    
 
                     <a href="{{ route('profile.edit') }}"
                         class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium text-slate-700 hover:bg-white">

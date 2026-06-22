@@ -7,9 +7,20 @@ use App\Models\Jasa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\NotifikasiService;
+use App\Models\VerifikasiFreelancer;
 
 class JasaController extends Controller
 {
+
+    private function pastikanFreelancerTerverifikasi($user): void
+    {
+        $verifikasi = VerifikasiFreelancer::where('id_freelancer', $user->id)
+            ->where('status_verifikasi', 'approved')
+            ->first();
+
+        abort_if(! $verifikasi, 403, 'Akun freelancer Anda belum diverifikasi admin.');
+    }
     private function authorizeFreelancerApproved(Request $request): void
     {
         $user = $request->user();
@@ -36,6 +47,8 @@ class JasaController extends Controller
 
     public function create(Request $request): View
     {
+        $this->pastikanFreelancerTerverifikasi($request->user());
+
         $this->authorizeFreelancerApproved($request);
 
         return view('freelancer.jasa.create');
@@ -43,6 +56,8 @@ class JasaController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->pastikanFreelancerTerverifikasi($request->user());
+
         $this->authorizeFreelancerApproved($request);
 
         $request->validate([
@@ -65,7 +80,7 @@ class JasaController extends Controller
             );
         }
 
-        Jasa::create([
+        $jasa = Jasa::create([
             'id_freelancer' => $request->user()->id,
             'nama_jasa' => $request->nama_jasa,
             'kategori' => $request->kategori,
@@ -73,8 +88,15 @@ class JasaController extends Controller
             'harga' => $request->harga,
             'estimasi_pengerjaan' => $request->estimasi_pengerjaan,
             'thumbnail' => $thumbnailPath,
-            'status_jasa' => 'active',
+            'status_jasa' => 'pending',
         ]);
+
+        NotifikasiService::kirimKeAdmin(
+            'Pengajuan Jasa Baru',
+            'Freelancer mengajukan jasa baru: "' . $jasa->nama_jasa . '". Silakan review pada menu Kelola Jasa.',
+            'system',
+            route('admin.jasa.index', [], false)
+        );
 
         return redirect()
             ->route('freelancer.jasa.index')

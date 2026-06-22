@@ -7,6 +7,7 @@ use App\Models\Withdrawal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\NotifikasiService;
 
 class WithdrawalController extends Controller
 {
@@ -44,6 +45,14 @@ class WithdrawalController extends Controller
             'tanggal_diproses' => now(),
         ]);
 
+        NotifikasiService::kirim(
+            $withdrawal->id_freelancer,
+            'Withdrawal Disetujui',
+            'Pengajuan pencairan saldo kamu telah disetujui oleh admin.',
+            'withdrawal',
+            route('freelancer.withdrawals.index', [], false)
+        );
+
         return redirect()
             ->route('admin.withdrawals.index')
             ->with('success', 'Pengajuan pencairan berhasil disetujui.');
@@ -68,6 +77,14 @@ class WithdrawalController extends Controller
             'catatan_admin' => $request->catatan_admin,
             'tanggal_diproses' => now(),
         ]);
+
+        NotifikasiService::kirim(
+            $withdrawal->id_freelancer,
+            'Withdrawal Ditolak',
+            'Pengajuan pencairan saldo kamu ditolak oleh admin. Silakan cek catatan admin.',
+            'withdrawal',
+            route('freelancer.withdrawals.index', [], false)
+        );
 
         return redirect()
             ->route('admin.withdrawals.index')

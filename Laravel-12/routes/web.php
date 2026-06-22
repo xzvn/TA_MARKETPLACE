@@ -26,7 +26,7 @@ use App\Http\Controllers\Admin\TransactionMonitoringController;
 use App\Http\Controllers\Customer\DisputeController as CustomerDisputeController;
 use App\Http\Controllers\Admin\DisputeController as AdminDisputeController;
 use App\Http\Controllers\NotifikasiController;
-
+use App\Http\Controllers\Admin\JasaController as AdminJasaController;
 
 
 Route::get('/', function () {
@@ -116,6 +116,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::post('/disputes/{dispute}/release', [AdminDisputeController::class, 'releaseToFreelancer'])
         ->name('disputes.release');
+
+    Route::get('/jasa', [AdminJasaController::class, 'index'])->name('jasa.index');
+
+    Route::post('/jasa/{jasa}/approve', [AdminJasaController::class, 'approve'])->name('jasa.approve');
+    
+    Route::post('/jasa/{jasa}/reject', [AdminJasaController::class, 'reject'])->name('jasa.reject');
 });
 
 Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(function () {
