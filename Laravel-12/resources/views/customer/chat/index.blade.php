@@ -59,7 +59,7 @@
                             </div>
 
                             <p class="text-xs text-slate-400">
-                               {{ ($chat->waktu_kirim ?? $chat->created_at)->timezone('Asia/Jakarta')->format('H:i') }} WIB
+                                {{ ($chat->waktu_kirim ?? $chat->created_at)->timezone('Asia/Jakarta')->format('H:i') }} WIB
                             </p>
                         </div>
 
@@ -91,4 +91,5 @@
         @endif
     </div>
 </div>
+<x-auto-refresh :seconds="10" />
 @endsection

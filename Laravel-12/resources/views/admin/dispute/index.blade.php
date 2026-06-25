@@ -494,4 +494,5 @@
 
     </div>
 </div>
+<x-auto-refresh :seconds="30" />
 @endsection

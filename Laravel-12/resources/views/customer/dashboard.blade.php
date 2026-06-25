@@ -60,9 +60,20 @@
                         </span>
                     </div>
 
-                    <span class="text-xs text-blue-600 font-bold">
-                        ★ 5.0
-                    </span>
+                    <div class="flex items-center gap-1 text-blue-600 font-bold">
+                        <span>★</span>
+
+                        @if ($item->reviews_count > 0)
+                        <span>{{ number_format($item->rating_rata_rata, 1) }}</span>
+                        <span class="text-xs text-slate-400 font-medium">
+                            ({{ $item->reviews_count }})
+                        </span>
+                        @else
+                        <span class="text-xs text-slate-400 font-medium">
+                            Belum ada rating
+                        </span>
+                        @endif
+                    </div>
                 </div>
 
                 <h3 class="font-bold text-slate-900 text-base leading-snug line-clamp-2 min-h-[44px]">
@@ -148,10 +159,5 @@
         </p>
     </div>
     @endif
-
-    <a href="{{ route('customer.marketplace') }}"
-        class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center text-2xl font-bold hover:bg-blue-700">
-        +
-    </a>
 </section>
 @endsection

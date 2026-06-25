@@ -19,8 +19,8 @@
                 </a>
 
                 <nav class="hidden md:flex items-center gap-5 text-xs font-medium">
-                    <a href="{{ route('customer.marketplace') }}"
-                        class="{{ request()->routeIs('customer.marketplace') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-600 hover:text-blue-700' }}">
+                    <a href="{{ route('dashboard') }}"
+                        class="{{ request()->routeIs('dashboard') ? 'text-blue-700 border-b-2 border-blue-700 pb-1' : 'text-slate-600 hover:text-blue-700' }}">
                         Pasar Jasa
                     </a>
 
@@ -36,61 +36,58 @@
                 </nav>
 
                 <form method="GET"
-                    action="{{ route('customer.marketplace') }}"
+                    action="{{ route('dashboard') }}"
                     class="hidden md:block flex-1 max-w-xl ml-auto">
                     <input type="text"
                         name="search"
                         placeholder="Cari layanan..."
                         class="w-full h-9 rounded-md border-slate-300 text-sm focus:border-blue-500 focus:ring-blue-500">
                 </form>
-                   <x-notifikasi-bell />
+                <x-notifikasi-bell />
             </div>
         </header>
 
         <div class="flex flex-1">
             <aside class="w-52 bg-[#eef3f8] border-r border-slate-200 hidden md:block">
-                <nav class="p-4 space-y-2 text-sm">
-                    <a href="{{ route('dashboard') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-md font-semibold {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-white' }}">
+                <nav class="space-y-2">
+                    <a href="{{ url('/dashboard') }}"
+                        class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
                         <span>▦</span>
                         <span>Beranda</span>
                     </a>
 
-
                     <a href="{{ route('customer.order.index') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium {{ request()->routeIs('customer.order.*') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-white' }}">
+                        class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
                         <span>🛒</span>
                         <span>Pesanan</span>
                     </a>
 
                     <a href="{{ route('customer.chat.index') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium {{ request()->routeIs('customer.chat.*') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-white' }}">
+                        class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
                         <span>💬</span>
                         <span>Pesan</span>
                     </a>
 
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium text-slate-700 hover:bg-white">
+                    <a href="{{ route('customer.payment.index') }}"
+                        class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
                         <span>💳</span>
                         <span>Pembayaran</span>
                     </a>
 
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium text-slate-700 hover:bg-white">
+                    <a href="{{ route('customer.review.index') }}"
+                        class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
                         <span>⭐</span>
                         <span>Ulasan</span>
                     </a>
 
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium text-slate-700 hover:bg-white">
-                        <span>⚙</span>
+                    <a href="{{ route('customer.progress.index') }}"
+                        class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
+                        <span>⚙️</span>
                         <span>Progress</span>
                     </a>
 
-    
-
                     <a href="{{ route('profile.edit') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-md font-medium text-slate-700 hover:bg-white">
+                        class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
                         <span>👤</span>
                         <span>Profil</span>
                     </a>

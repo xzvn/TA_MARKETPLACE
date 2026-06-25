@@ -267,7 +267,7 @@ $ratingText = $totalReview > 0
         </div>
 
         <aside class="lg:col-span-4 space-y-6">
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sticky top-20">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 top-20">
                 <div class="flex items-center justify-between">
                     <p class="text-sm text-slate-500">
                         Paket Pemula
@@ -355,49 +355,58 @@ $ratingText = $totalReview > 0
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-5 text-center">
+                    {{-- CARD RATING --}}
                     <div class="p-3 bg-slate-50 rounded-lg">
-                        <p class="font-bold text-slate-900">
-                            5.0
+                        <p class="text-2xl font-bold text-slate-900">
+                            {{ $totalReviewJasa > 0 ? number_format($ratingJasa, 1) : '0.0' }}
                         </p>
+
                         <p class="text-xs text-slate-500">
                             Rating
                         </p>
+
+                        <p class="text-xs text-slate-400 mt-1">
+                            {{ $totalReviewJasa > 0 ? $totalReviewJasa . ' review' : 'Belum ada review' }}
+                        </p>
                     </div>
 
+                    {{-- CARD STATUS --}}
                     <div class="p-3 bg-slate-50 rounded-lg">
-                        <p class="font-bold text-slate-900">
+                        <p class="text-2xl font-bold text-slate-900">
                             Aktif
                         </p>
+
                         <p class="text-xs text-slate-500">
                             Status
                         </p>
                     </div>
                 </div>
-
-                <div class="mt-5 border-t border-slate-100 pt-5 text-sm">
-                    <p class="text-slate-500">
-                        Universitas
-                    </p>
-
-                    <p class="font-semibold text-slate-900 mt-1">
-                        {{ $jasa->freelancer->verifikasiFreelancer->universitas ?? '-' }}
-                    </p>
-
-                    <p class="text-slate-500 mt-4">
-                        Program Studi
-                    </p>
-
-                    <p class="font-semibold text-slate-900 mt-1">
-                        {{ $jasa->freelancer->verifikasiFreelancer->program_studi ?? '-' }}
-                    </p>
-                </div>
-
-                <a href="#"
-                    class="block text-center mt-5 w-full px-5 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200">
-                    Lihat Profil Freelancer
-                </a>
             </div>
-        </aside>
+
+            <div class="mt-5 border-t border-slate-100 pt-5 text-sm">
+                <p class="text-slate-500">
+                    Universitas
+                </p>
+
+                <p class="font-semibold text-slate-900 mt-1">
+                    {{ $jasa->freelancer->verifikasiFreelancer->universitas ?? '-' }}
+                </p>
+
+                <p class="text-slate-500 mt-4">
+                    Program Studi
+                </p>
+
+                <p class="font-semibold text-slate-900 mt-1">
+                    {{ $jasa->freelancer->verifikasiFreelancer->program_studi ?? '-' }}
+                </p>
+            </div>
+
+            <a href="#"
+                class="block text-center mt-5 w-full px-5 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200">
+                Lihat Profil Freelancer
+            </a>
+    </div>
+    </aside>
     </div>
 </section>
 @endsection

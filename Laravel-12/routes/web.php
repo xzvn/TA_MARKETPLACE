@@ -27,6 +27,16 @@ use App\Http\Controllers\Customer\DisputeController as CustomerDisputeController
 use App\Http\Controllers\Admin\DisputeController as AdminDisputeController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\Admin\JasaController as AdminJasaController;
+use App\Models\Notifikasi;
+use App\Models\Pesanan;
+use App\Models\Pembayaran;
+use App\Models\Dispute;
+use App\Models\Withdrawal;
+use Illuminate\Http\Request;
+use App\Services\NotifikasiService;
+
+
+
 
 
 Route::get('/', function () {
@@ -37,19 +47,190 @@ Route::get('/dashboard', function () {
     $user = Auth::user();
 
     if ($user->role === 'admin') {
-        $totalUsers = User::count();
+        $totalPengguna = User::count();
+        $freelancerAktif = User::where('role', 'freelancer')->count();
 
-        $freelancerPending = VerifikasiFreelancer::where('status_verifikasi', 'pending')->count();
+        $layananTerdaftar = Jasa::count();
+        $layananAktif = Jasa::where('status_jasa', 'active')->count();
+        $layananPending = Jasa::where('status_jasa', 'pending')->count();
+        $layananDitolak = Jasa::where('status_jasa', 'rejected')->count();
 
-        $freelancerApproved = VerifikasiFreelancer::where('status_verifikasi', 'approved')->count();
+        $proyekBerjalan = Pesanan::whereIn('status_pesanan', [
+            'dibayar',
+            'diproses',
+            'revisi',
+            'menunggu_approve',
+        ])->count();
 
-        $freelancerRejected = VerifikasiFreelancer::where('status_verifikasi', 'rejected')->count();
+        $totalPesanan = Pesanan::count();
+        $totalTransaksi = Pembayaran::count();
+
+        $totalPendapatan = Pembayaran::where('status_escrow', 'dicairkan')
+            ->sum('gross_amount');
+
+        $escrowDitahan = Pembayaran::where('status_escrow', 'ditahan')
+            ->sum('gross_amount');
+
+        $verifikasiPending = VerifikasiFreelancer::where('status_verifikasi', 'pending')
+            ->count();
+
+        $disputeAktif = Dispute::whereIn('status_dispute', ['pending', 'diproses'])
+            ->count();
+
+        $withdrawalPending = Withdrawal::where('status_withdrawal', 'pending')
+            ->count();
+
+        $logLimit = (int) request()->query('log_limit', 5);
+
+        if ($logLimit < 5) {
+            $logLimit = 5;
+        }
+
+        if ($logLimit > 50) {
+            $logLimit = 50;
+        }
+
+        $totalAktivitas = Notifikasi::count();
+
+        $aktivitasTerbaru = Notifikasi::with('user')
+            ->latest()
+            ->take($logLimit)
+            ->get()
+            ->map(function ($notifikasi) {
+                return [
+                    'event' => $notifikasi->judul,
+                    'aktor' => $notifikasi->user->nama ?? '-',
+                    'status' => strtoupper($notifikasi->tipe),
+                    'warna' => match ($notifikasi->tipe) {
+                        'dispute' => 'red',
+                        'withdrawal' => 'yellow',
+                        'pembayaran' => 'green',
+                        'order' => 'blue',
+                        'progress' => 'blue',
+                        'revisi' => 'yellow',
+                        'hasil' => 'green',
+                        default => 'blue',
+                    },
+                    'waktu' => $notifikasi->created_at,
+                    'url' => $notifikasi->url,
+                ];
+            });
+
+        $adaLogLainnya = $totalAktivitas > $aktivitasTerbaru->count();
+        $nextLogLimit = $logLimit + 10;
+
+        $tahunDashboard = now()->year;
+
+        $bulanLabels = [
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'Mei',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Agu',
+            9 => 'Sep',
+            10 => 'Okt',
+            11 => 'Nov',
+            12 => 'Des',
+        ];
+
+        /*
+|--------------------------------------------------------------------------
+| Grafik Tren Pendapatan Bulanan
+|--------------------------------------------------------------------------
+*/
+
+        $trenPendapatan = [];
+
+        foreach ($bulanLabels as $bulan => $label) {
+            $trenPendapatan[] = [
+                'bulan' => $label,
+                'total' => Pembayaran::where('status_escrow', 'dicairkan')
+                    ->whereYear('created_at', $tahunDashboard)
+                    ->whereMonth('created_at', $bulan)
+                    ->sum('gross_amount'),
+            ];
+        }
+
+        $pendapatanMaks = collect($trenPendapatan)->max('total') ?: 1;
+
+        $trenPendapatanChart = collect($trenPendapatan)
+            ->map(function ($item) use ($pendapatanMaks) {
+                return [
+                    'bulan' => $item['bulan'],
+                    'total' => $item['total'],
+                    'persen' => round(($item['total'] / $pendapatanMaks) * 100),
+                ];
+            })
+            ->values();
+
+        /*
+|--------------------------------------------------------------------------
+| Grafik Pertumbuhan Pengguna Bulanan
+|--------------------------------------------------------------------------
+*/
+
+        $pertumbuhanPengguna = [];
+
+        foreach ($bulanLabels as $bulan => $label) {
+            $customer = User::where('role', 'customer')
+                ->whereYear('created_at', $tahunDashboard)
+                ->whereMonth('created_at', $bulan)
+                ->count();
+
+            $freelancer = User::where('role', 'freelancer')
+                ->whereYear('created_at', $tahunDashboard)
+                ->whereMonth('created_at', $bulan)
+                ->count();
+
+            $pertumbuhanPengguna[] = [
+                'bulan' => $label,
+                'customer' => $customer,
+                'freelancer' => $freelancer,
+            ];
+        }
+
+        $penggunaMaks = collect($pertumbuhanPengguna)
+            ->flatMap(fn($item) => [$item['customer'], $item['freelancer']])
+            ->max() ?: 1;
+
+        $pertumbuhanPenggunaChart = collect($pertumbuhanPengguna)
+            ->map(function ($item) use ($penggunaMaks) {
+                return [
+                    'bulan' => $item['bulan'],
+                    'customer' => $item['customer'],
+                    'freelancer' => $item['freelancer'],
+                    'customer_persen' => round(($item['customer'] / $penggunaMaks) * 100),
+                    'freelancer_persen' => round(($item['freelancer'] / $penggunaMaks) * 100),
+                ];
+            })
+            ->values();
 
         return view('admin.dashboard', compact(
-            'totalUsers',
-            'freelancerPending',
-            'freelancerApproved',
-            'freelancerRejected'
+            'totalPengguna',
+            'freelancerAktif',
+            'layananTerdaftar',
+            'layananAktif',
+            'layananPending',
+            'layananDitolak',
+            'proyekBerjalan',
+            'totalPesanan',
+            'totalTransaksi',
+            'totalPendapatan',
+            'escrowDitahan',
+            'verifikasiPending',
+            'disputeAktif',
+            'withdrawalPending',
+            'aktivitasTerbaru',
+            'logLimit',
+            'totalAktivitas',
+            'adaLogLainnya',
+            'nextLogLimit',
+            'tahunDashboard',
+            'trenPendapatanChart',
+            'pertumbuhanPenggunaChart'
         ));
     }
 
@@ -120,8 +301,118 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/jasa', [AdminJasaController::class, 'index'])->name('jasa.index');
 
     Route::post('/jasa/{jasa}/approve', [AdminJasaController::class, 'approve'])->name('jasa.approve');
-    
+
     Route::post('/jasa/{jasa}/reject', [AdminJasaController::class, 'reject'])->name('jasa.reject');
+
+    // Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/laporan/download', function () {
+        abort_if(auth()->user()->role !== 'admin', 403);
+
+        $filename = 'laporan-jasakampus-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () {
+            $handle = fopen('php://output', 'w');
+
+            // agar aman dibuka di Excel
+            echo chr(239) . chr(187) . chr(191);
+
+            fputcsv($handle, ['LAPORAN DASHBOARD ADMIN JASAKAMPUS']);
+            fputcsv($handle, ['Tanggal Unduh', now()->format('d-m-Y H:i:s')]);
+            fputcsv($handle, []);
+
+            fputcsv($handle, ['RINGKASAN']);
+            fputcsv($handle, ['Total Pengguna', User::count()]);
+            fputcsv($handle, ['Total Customer', User::where('role', 'customer')->count()]);
+            fputcsv($handle, ['Total Freelancer', User::where('role', 'freelancer')->count()]);
+            fputcsv($handle, ['Total Admin', User::where('role', 'admin')->count()]);
+            fputcsv($handle, ['Total Jasa', Jasa::count()]);
+            fputcsv($handle, ['Jasa Aktif', Jasa::where('status_jasa', 'active')->count()]);
+            fputcsv($handle, ['Jasa Pending', Jasa::where('status_jasa', 'pending')->count()]);
+            fputcsv($handle, ['Jasa Ditolak', Jasa::where('status_jasa', 'rejected')->count()]);
+            fputcsv($handle, ['Total Pesanan', Pesanan::count()]);
+            fputcsv($handle, ['Total Transaksi', Pembayaran::count()]);
+            fputcsv($handle, ['Escrow Ditahan', Pembayaran::where('status_escrow', 'ditahan')->sum('gross_amount')]);
+            fputcsv($handle, ['Escrow Dicairkan', Pembayaran::where('status_escrow', 'dicairkan')->sum('gross_amount')]);
+            fputcsv($handle, ['Withdrawal Pending', Withdrawal::where('status_withdrawal', 'pending')->count()]);
+            fputcsv($handle, ['Dispute Aktif', Dispute::whereIn('status_dispute', ['pending', 'diproses'])->count()]);
+            fputcsv($handle, ['Verifikasi Freelancer Pending', VerifikasiFreelancer::where('status_verifikasi', 'pending')->count()]);
+            fputcsv($handle, []);
+
+            fputcsv($handle, ['DATA PESANAN TERBARU']);
+            fputcsv($handle, ['ID Pesanan', 'Customer', 'Freelancer', 'Jasa', 'Status', 'Total Harga', 'Tanggal']);
+
+            Pesanan::with(['customer', 'freelancer', 'jasa'])
+                ->latest()
+                ->take(50)
+                ->get()
+                ->each(function ($pesanan) use ($handle) {
+                    fputcsv($handle, [
+                        $pesanan->id,
+                        $pesanan->customer->nama ?? '-',
+                        $pesanan->freelancer->nama ?? '-',
+                        $pesanan->jasa->nama_jasa ?? '-',
+                        $pesanan->status_pesanan,
+                        $pesanan->total_harga,
+                        optional($pesanan->created_at)->format('d-m-Y H:i'),
+                    ]);
+                });
+
+            fputcsv($handle, []);
+            fputcsv($handle, ['DATA TRANSAKSI TERBARU']);
+            fputcsv($handle, ['ID', 'Order ID', 'Status Transaksi', 'Status Escrow', 'Nominal', 'Tanggal']);
+
+            Pembayaran::latest()
+                ->take(50)
+                ->get()
+                ->each(function ($pembayaran) use ($handle) {
+                    fputcsv($handle, [
+                        $pembayaran->id,
+                        $pembayaran->order_id,
+                        $pembayaran->transaction_status,
+                        $pembayaran->status_escrow,
+                        $pembayaran->gross_amount,
+                        optional($pembayaran->created_at)->format('d-m-Y H:i'),
+                    ]);
+                });
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    })->name('reports.download');
+
+
+    Route::post('/request/store', function (Request $request) {
+        abort_if(auth()->user()->role !== 'admin', 403);
+
+        $data = $request->validate([
+            'target' => ['required', 'in:all,customer,freelancer'],
+            'judul' => ['required', 'string', 'max:150'],
+            'pesan' => ['required', 'string', 'min:5'],
+            'kirim_email' => ['nullable', 'boolean'],
+        ]);
+
+        $users = User::query()
+            ->when($data['target'] !== 'all', function ($query) use ($data) {
+                $query->where('role', $data['target']);
+            })
+            ->whereIn('role', ['customer', 'freelancer'])
+            ->get();
+
+        foreach ($users as $user) {
+            NotifikasiService::kirim(
+                $user->id,
+                $data['judul'],
+                $data['pesan'],
+                'system',
+                route('dashboard', [], false),
+                $request->boolean('kirim_email')
+            );
+        }
+
+        return back()->with('success', 'Request berhasil dikirim ke ' . $users->count() . ' user.');
+    })->name('request.store');
 });
 
 Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(function () {
@@ -178,7 +469,27 @@ Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(functi
 
     Route::post('/orders/{pesanan}/dispute', [CustomerDisputeController::class, 'store'])
         ->name('order.dispute.store');
+
+    Route::get('/payments', function () {
+        return redirect()->route('customer.order.index');
+    })->name('payment.index');
+
+    Route::get('/reviews', function () {
+        return redirect()->route('customer.order.index');
+    })->name('review.index');
+
+    Route::get('/progress', function () {
+        return redirect()->route('customer.order.index');
+    })->name('progress.index');
+
+    Route::post('/order/{pesanan}/payment/finish', [PaymentController::class, 'finish'])
+        ->name('payment.finish');
+
+    Route::get('/payments', [PaymentController::class, 'index'])
+        ->name('payment.index');
 });
+Route::post('/midtrans/notification', [PaymentController::class, 'notification'])
+    ->name('midtrans.notification');
 
 Route::get('/freelancer/register', [FreelancerRegisterController::class, 'create'])
     ->name('freelancer.register');

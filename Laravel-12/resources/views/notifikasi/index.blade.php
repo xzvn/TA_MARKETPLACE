@@ -93,4 +93,7 @@
         @endif
     </div>
 </div>
+
+<x-auto-refresh :seconds="20" />
+
 @endsection

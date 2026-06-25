@@ -21,6 +21,10 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class Pembayaran extends Model
 {
+    protected $casts = [
+        'tanggal_bayar' => 'datetime',
+        'gross_amount' => 'decimal:2',
+    ];
     use HasFactory;
 
     public function pesanan()

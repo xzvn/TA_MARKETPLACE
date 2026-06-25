@@ -7,7 +7,7 @@ use App\Models\Jasa;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Chat;
-
+use App\Models\Review;
 
 class MarketplaceController extends Controller
 {
@@ -42,7 +42,9 @@ class MarketplaceController extends Controller
             $query->where('kategori', $request->kategori);
         }
 
-        $jasas = Jasa::with('freelancer')
+        $jasa = Jasa::with('freelancer')
+            ->withAvg('reviews as rating_rata_rata', 'rating')
+            ->withCount('reviews')
             ->where('status_jasa', 'active')
             ->latest()
             ->get();
@@ -62,11 +64,18 @@ class MarketplaceController extends Controller
             'reviews.customer',
         ]);
 
+        $ratingJasa = Review::where('id_jasa', $jasa->id_jasa)
+            ->avg('rating');
+
+        $totalReviewJasa = Review::where('id_jasa', $jasa->id_jasa)
+            ->count();
+
+
         $sudahChat = Chat::where('id_jasa', $jasa->id)
             ->where('id_customer', $request->user()->id)
             ->where('id_freelancer', $jasa->id_freelancer)
             ->exists();
 
-        return view('customer.detail-jasa', compact('jasa', 'sudahChat'));
+        return view('customer.detail-jasa', compact('jasa', 'sudahChat', 'ratingJasa', 'totalReviewJasa'));
     }
 }

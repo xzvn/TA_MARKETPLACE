@@ -92,18 +92,41 @@
             </div>
 
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                @if ($pesanan->status_pesanan === 'menunggu_pembayaran')
+                @if ($pesanan->status_pesanan === 'menunggu_pembayaran' && ! optional($pesanan->pembayaran)->snap_token)
                 <form method="POST"
                     action="{{ route('customer.payment.pay', $pesanan->id) }}">
                     @csrf
 
                     <button type="submit"
                         class="w-full px-5 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700">
-                        Lanjutkan Pembayaran
+                        Buat Pembayaran Midtrans
                     </button>
                 </form>
 
-                <a href="{{ route('customer.marketplace') }}"
+                <a href="{{ url('/dashboard') }}"
+                    class="block text-center mt-3 w-full px-5 py-3 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100">
+                    Batalkan Pesanan
+                </a>
+
+                @elseif ($pesanan->status_pesanan === 'menunggu_pembayaran' && optional($pesanan->pembayaran)->snap_token)
+                <button type="button"
+                    id="pay-button"
+                    class="w-full px-5 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700">
+                    Bayar Sekarang dengan Midtrans
+                </button>
+
+                <form method="POST"
+                    action="{{ route('customer.payment.pay', $pesanan->id) }}"
+                    class="mt-3">
+                    @csrf
+
+                    <button type="submit"
+                        class="w-full px-5 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">
+                        Buat Ulang Token Pembayaran
+                    </button>
+                </form>
+
+                <a href="{{ url('/dashboard') }}"
                     class="block text-center mt-3 w-full px-5 py-3 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100">
                     Batalkan Pesanan
                 </a>
@@ -117,9 +140,9 @@
                     </p>
                 </div>
 
-                <a href="{{ route('customer.marketplace') }}"
+                <a href="{{ url('/dashboard') }}"
                     class="block text-center mt-3 w-full px-5 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">
-                    Kembali ke Marketplace
+                    Kembali ke Dashboard
                 </a>
                 @endif
             </div>
@@ -130,11 +153,11 @@
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                     <h2 class="font-bold text-slate-900">
-                        Pembayaran QRIS
+                        Pembayaran Midtrans
                     </h2>
 
                     <span class="px-3 py-1 bg-slate-900 text-white rounded text-xs font-bold">
-                        QRIS
+                        Sandbox
                     </span>
                 </div>
 
@@ -154,7 +177,7 @@
 
                 <p class="text-sm text-slate-500 mt-2 max-w-xl mx-auto">
                     Gunakan aplikasi mobile banking, e-wallet, atau aplikasi pembayaran yang mendukung QRIS.
-                    Untuk tahap pengembangan, tombol pembayaran akan mensimulasikan transaksi berhasil.
+                    Pembayaran akan diproses melalui Midtrans Sandbox. Silakan klik tombol Bayar Sekarang dengan Midtrans setelah token pembayaran dibuat.
                 </p>
 
                 <div class="mt-8 text-left max-w-xl mx-auto bg-slate-50 border border-slate-200 rounded-2xl p-5">
@@ -163,11 +186,11 @@
                     </h4>
 
                     <ol class="space-y-2 text-sm text-slate-600 list-decimal list-inside">
-                        <li>Buka aplikasi mobile banking atau e-wallet.</li>
-                        <li>Pilih menu pembayaran QRIS / Scan QR.</li>
-                        <li>Arahkan kamera ke kode QR yang tersedia.</li>
-                        <li>Pastikan nominal sesuai total tagihan.</li>
-                        <li>Klik tombol <b>Lanjutkan Pembayaran</b> untuk simulasi berhasil.</li>
+                        <li>Klik tombol <b>Buat Pembayaran Midtrans</b>.</li>
+                        <li>Setelah token dibuat, klik tombol <b>Bayar Sekarang dengan Midtrans</b>.</li>
+                        <li>Pilih metode pembayaran Sandbox, misalnya QRIS, GoPay, atau Virtual Account.</li>
+                        <li>Selesaikan pembayaran sesuai instruksi Midtrans.</li>
+                        <li>Jika pembayaran berhasil, dana akan ditahan sementara oleh sistem escrow.</li>
                     </ol>
                 </div>
             </div>
@@ -281,6 +304,50 @@
 @endsection
 
 @push('scripts')
+@if ($pesanan->status_pesanan === 'menunggu_pembayaran' && optional($pesanan->pembayaran)->snap_token)
+@php
+$midtransIsProduction = filter_var(config('services.midtrans.is_production'), FILTER_VALIDATE_BOOLEAN);
+@endphp
+
+<script src="{{ $midtransIsProduction ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
+    data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+<script>
+    const payButton = document.getElementById('pay-button');
+
+    if (payButton) {
+        payButton.addEventListener('click', function() {
+            window.snap.pay('{{ $pesanan->pembayaran->snap_token }}', {
+                onSuccess: function(result) {
+                    fetch('{{ url(' / customer / order / ' . $pesanan->id . ' / payment / finish ') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(result)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            window.location.href = '{{ url(' / customer / order / ' . $pesanan->id . ' / payment ') }}';
+                        });
+                },
+                onPending: function(result) {
+                    alert('Pembayaran masih pending. Silakan selesaikan pembayaran.');
+                    window.location.reload();
+                },
+                onError: function(result) {
+                    alert('Pembayaran gagal. Silakan coba lagi.');
+                },
+                onClose: function() {
+                    alert('Popup pembayaran ditutup sebelum selesai.');
+                }
+            });
+        });
+    }
+</script>
+@endif
+
 <script>
     const countdown = document.getElementById('payment-countdown');
 

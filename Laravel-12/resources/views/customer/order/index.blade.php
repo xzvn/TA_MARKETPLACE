@@ -29,7 +29,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('customer.marketplace') }}"
+            <a href="{{ route('dashboard') }}"
                 class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700">
                 Cari Jasa Lagi
             </a>
