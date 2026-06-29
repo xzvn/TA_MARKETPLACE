@@ -77,12 +77,10 @@ class FreelancerRegisterController extends Controller
         DB::transaction(function () use ($request) {
             $emailFolder = str_replace(['@', '.'], '_', strtolower($request->email_kampus));
 
-            $ktmPath = $request->file('file_ktm')->store(
-                'uploads/freelancer/' . $emailFolder . '/ktm',
-                'public'
+            $ktmPath = CloudinaryService::uploadFile(
+                $request->file('file_ktm'),
+                'jasakampus/freelancer/' . $emailFolder . '/ktm'
             );
-
-            $emailFolder = str_replace(['@', '.'], '_', strtolower($request->email));
 
             $portofolioPath = CloudinaryService::uploadFile(
                 $request->file('file_portofolio'),

@@ -52,4 +52,15 @@ class CloudinaryService
 
         return $result['secure_url'];
     }
+
+    public static function mediaUrl(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        return str_starts_with($path, 'http')
+            ? $path
+            : asset('storage/' . $path);
+    }
 }

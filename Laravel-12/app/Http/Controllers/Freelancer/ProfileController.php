@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use App\Services\CloudinaryService;
@@ -54,10 +53,13 @@ class ProfileController extends Controller
         $tempFotoProfil = null;
 
         if ($request->hasFile('foto_profil')) {
-            $tempFotoProfil = $request->file('foto_profil')
-                ->store('uploads/freelancer/profile-temp', 'public');
-        }
+            $emailFolder = str_replace(['@', '.'], '_', strtolower($data['email']));
 
+            $tempFotoProfil = CloudinaryService::uploadImage(
+                $request->file('foto_profil'),
+                'jasakampus/freelancer/' . $emailFolder . '/profile'
+            );
+        }
         $pin = (string) random_int(100000, 999999);
 
         session([
@@ -117,10 +119,7 @@ class ProfileController extends Controller
         }
 
         if (now()->greaterThan($pending['expired_at'])) {
-            $this->hapusFotoTemp($pending['temp_foto_profil'] ?? null);
-
             session()->forget('freelancer_profile_update');
-
             return redirect()
                 ->route('freelancer.profile.index')
                 ->withErrors(['pin' => 'PIN sudah kedaluwarsa. Silakan ubah profil kembali.']);
@@ -135,30 +134,7 @@ class ProfileController extends Controller
         $data = $pending['data'];
 
         if (! empty($pending['temp_foto_profil'])) {
-            if (
-                $user->foto_profil &&
-                ! str_starts_with($user->foto_profil, 'http') &&
-                Storage::disk('public')->exists($user->foto_profil)
-            ) {
-                Storage::disk('public')->delete($user->foto_profil);
-            }
-
-            $fullTempPath = storage_path('app/public/' . $pending['temp_foto_profil']);
-
-            $uploadedFile = new \Illuminate\Http\UploadedFile(
-                $fullTempPath,
-                basename($pending['temp_foto_profil']),
-                null,
-                null,
-                true
-            );
-
-            $data['foto_profil'] = CloudinaryService::uploadImage(
-                $uploadedFile,
-                'jasakampus/freelancer/profile'
-            );
-
-            $this->hapusFotoTemp($pending['temp_foto_profil']);
+            $data['foto_profil'] = $pending['temp_foto_profil'];
         }
 
         $user->update($data);
@@ -170,10 +146,5 @@ class ProfileController extends Controller
             ->with('success', 'Profil freelancer berhasil diperbarui setelah verifikasi PIN.');
     }
 
-    private function hapusFotoTemp(?string $path): void
-    {
-        if ($path && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
-    }
+   
 }

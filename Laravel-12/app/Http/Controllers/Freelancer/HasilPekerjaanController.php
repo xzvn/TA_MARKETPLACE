@@ -55,9 +55,9 @@ class HasilPekerjaanController extends Controller
 
         $emailFolder = str_replace(['@', '.'], '_', strtolower($request->user()->email));
 
-        $fileHasilPath = $request->file('file_hasil')->store(
-            'uploads/freelancer/' . $emailFolder . '/hasil',
-            'public'
+        $fileHasilPath = CloudinaryService::uploadFile(
+            $request->file('file_hasil'),
+            'jasakampus/freelancer/' . $emailFolder . '/hasil'
         );
 
         HasilPekerjaan::updateOrCreate(

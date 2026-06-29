@@ -8,6 +8,8 @@ use App\Models\Review;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\CloudinaryService;
+
 
 class ReviewController extends Controller
 {
@@ -55,14 +57,17 @@ class ReviewController extends Controller
             'rating_profesionalisme' => ['required', 'integer', 'min:1', 'max:5'],
             'ulasan' => ['nullable', 'string', 'max:1000'],
             'rekomendasi' => ['nullable', 'accepted'],
-            'foto_review' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
-            
+            'foto_review' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+
         ]);
 
-        $fotoPath = $pesanan->review->foto_review ?? null;
+        $fotoPath = null;
 
         if ($request->hasFile('foto_review')) {
-            $fotoPath = $request->file('foto_review')->store('foto-review', 'public');
+            $fotoPath = CloudinaryService::uploadImage(
+                $request->file('foto_review'),
+                'jasakampus/review'
+            );
         }
 
         $ratingOverall = round((

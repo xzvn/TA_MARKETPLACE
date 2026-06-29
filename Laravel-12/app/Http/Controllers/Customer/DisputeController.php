@@ -8,8 +8,7 @@ use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Services\NotifikasiService;
-
-
+use App\Services\CloudinaryService;
 
 class DisputeController extends Controller
 {
@@ -27,46 +26,24 @@ class DisputeController extends Controller
 
         $pesanan->load('dispute');
 
-        abort_if(
-            $pesanan->status_pesanan === 'selesai',
-            403,
-            'Pesanan yang sudah selesai tidak dapat diajukan dispute.'
-        );
-
-        abort_if(
-            $pesanan->status_pesanan === 'dibatalkan',
-            403,
-            'Pesanan yang sudah dibatalkan tidak dapat diajukan dispute.'
-        );
-
-        abort_if(
-            $pesanan->status_pesanan === 'dispute',
-            403,
-            'Pesanan ini sudah dalam proses dispute.'
-        );
-
-        abort_if(
-            $pesanan->jumlah_revisi < $pesanan->batas_revisi,
-            403,
-            'Dispute hanya dapat diajukan setelah batas revisi tercapai.'
-        );
-
-        abort_if(
-            $pesanan->dispute,
-            403,
-            'Dispute untuk pesanan ini sudah pernah diajukan.'
-        );
+        abort_if($pesanan->status_pesanan === 'selesai', 403, 'Pesanan yang sudah selesai tidak dapat diajukan dispute.');
+        abort_if($pesanan->status_pesanan === 'dibatalkan', 403, 'Pesanan yang sudah dibatalkan tidak dapat diajukan dispute.');
+        abort_if($pesanan->status_pesanan === 'dispute', 403, 'Pesanan ini sudah dalam proses dispute.');
+        abort_if($pesanan->jumlah_revisi < $pesanan->batas_revisi, 403, 'Dispute hanya dapat diajukan setelah batas revisi tercapai.');
+        abort_if($pesanan->dispute, 403, 'Dispute untuk pesanan ini sudah pernah diajukan.');
 
         $request->validate([
             'alasan_dispute' => ['required', 'string', 'min:10'],
-            'bukti_dispute' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:5120'],
+            'bukti_dispute' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx', 'max:5120'],
         ]);
 
         $buktiPath = null;
 
         if ($request->hasFile('bukti_dispute')) {
-            $buktiPath = $request->file('bukti_dispute')
-                ->store('uploads/dispute', 'public');
+            $buktiPath = CloudinaryService::uploadFile(
+                $request->file('bukti_dispute'),
+                'jasakampus/dispute'
+            );
         }
 
         Dispute::create([
@@ -79,7 +56,6 @@ class DisputeController extends Controller
             'tanggal_pengajuan' => now(),
         ]);
 
-        
         $pesanan->update([
             'status_pesanan' => 'dispute',
         ]);

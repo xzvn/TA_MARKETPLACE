@@ -44,8 +44,12 @@ class ProfileController extends Controller
         $tempFotoProfil = null;
 
         if ($request->hasFile('foto_profil')) {
-            $tempFotoProfil = $request->file('foto_profil')
-                ->store('uploads/customer/profile-temp', 'public');
+            $emailFolder = str_replace(['@', '.'], '_', strtolower($data['email']));
+
+            $tempFotoProfil = CloudinaryService::uploadImage(
+                $request->file('foto_profil'),
+                'jasakampus/customer/' . $emailFolder . '/profile'
+            );
         }
 
         $pin = (string) random_int(100000, 999999);
@@ -110,8 +114,6 @@ class ProfileController extends Controller
         }
 
         if (now()->greaterThan($pending['expired_at'])) {
-            $this->hapusFotoTemp($pending['temp_foto_profil'] ?? null);
-
             session()->forget('customer_profile_update');
 
             return redirect()
@@ -124,33 +126,10 @@ class ProfileController extends Controller
                 ->withErrors(['pin' => 'PIN yang kamu masukkan salah.'])
                 ->withInput();
         }
-
         $data = $pending['data'];
+
         if (! empty($pending['temp_foto_profil'])) {
-            if (
-                $user->foto_profil &&
-                ! str_starts_with($user->foto_profil, 'http') &&
-                Storage::disk('public')->exists($user->foto_profil)
-            ) {
-                Storage::disk('public')->delete($user->foto_profil);
-            }
-
-            $fullTempPath = storage_path('app/public/' . $pending['temp_foto_profil']);
-
-            $uploadedFile = new \Illuminate\Http\UploadedFile(
-                $fullTempPath,
-                basename($pending['temp_foto_profil']),
-                null,
-                null,
-                true
-            );
-
-            $data['foto_profil'] = CloudinaryService::uploadImage(
-                $uploadedFile,
-                'jasakampus/customer/profile'
-            );
-
-            $this->hapusFotoTemp($pending['temp_foto_profil']);
+            $data['foto_profil'] = $pending['temp_foto_profil'];
         }
 
         $user->update($data);
@@ -160,12 +139,5 @@ class ProfileController extends Controller
         return redirect()
             ->route('customer.profile.index')
             ->with('success', 'Profil berhasil diperbarui setelah verifikasi PIN.');
-    }
-
-    private function hapusFotoTemp(?string $path): void
-    {
-        if ($path && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
     }
 }

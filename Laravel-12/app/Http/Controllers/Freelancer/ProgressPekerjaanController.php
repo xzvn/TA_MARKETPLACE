@@ -66,9 +66,9 @@ class ProgressPekerjaanController extends Controller
         if ($request->hasFile('file_progress')) {
             $emailFolder = str_replace(['@', '.'], '_', strtolower($request->user()->email));
 
-            $fileProgressPath = $request->file('file_progress')->store(
-                'uploads/freelancer/' . $emailFolder . '/progress',
-                'public'
+            $fileProgressPath = CloudinaryService::uploadFile(
+                $request->file('file_progress'),
+                'jasakampus/freelancer/' . $emailFolder . '/progress'
             );
         }
 

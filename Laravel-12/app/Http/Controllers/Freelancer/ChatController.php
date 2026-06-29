@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\CloudinaryService;
+
 
 class ChatController extends Controller
 {
@@ -66,9 +68,9 @@ class ChatController extends Controller
         if ($request->hasFile('lampiran')) {
             $emailFolder = str_replace(['@', '.'], '_', strtolower($request->user()->email));
 
-            $lampiranPath = $request->file('lampiran')->store(
-                'uploads/freelancer/' . $emailFolder . '/chat',
-                'public'
+            $lampiranPath = CloudinaryService::uploadFile(
+                $request->file('lampiran'),
+                'jasakampus/freelancer/' . $emailFolder . '/chat'
             );
         }
 

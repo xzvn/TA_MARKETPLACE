@@ -8,6 +8,7 @@ use App\Models\Jasa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\CloudinaryService;
 
 
 class ChatController extends Controller
@@ -53,7 +54,7 @@ class ChatController extends Controller
                     'pengirim_id' => $chat->pengirim_id,
                     'pengirim_nama' => $chat->pengirim->nama ?? 'User',
                     'pesan' => $chat->pesan,
-                    'lampiran' => $chat->lampiran ? asset('storage/' . $chat->lampiran) : null,
+                    'lampiran' => CloudinaryService::mediaUrl($chat->lampiran),
                     'waktu' => $chat->created_at->format('d M Y H:i'),
                 ];
             });
@@ -77,9 +78,9 @@ class ChatController extends Controller
         if ($request->hasFile('lampiran')) {
             $emailFolder = str_replace(['@', '.'], '_', strtolower($request->user()->email));
 
-            $lampiranPath = $request->file('lampiran')->store(
-                'uploads/customer/' . $emailFolder . '/chat',
-                'public'
+            $lampiranPath = CloudinaryService::uploadFile(
+                $request->file('lampiran'),
+                'jasakampus/customer/' . $emailFolder . '/chat'
             );
         }
 

@@ -9,7 +9,7 @@ use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-
+use App\Services\CloudinaryService;
 
 class OrderController extends Controller
 {
@@ -59,9 +59,9 @@ class OrderController extends Controller
         if ($request->hasFile('file_requirement')) {
             $emailFolder = str_replace(['@', '.'], '_', strtolower($request->user()->email));
 
-            $fileRequirementPath = $request->file('file_requirement')->store(
-                'uploads/customer/' . $emailFolder . '/order',
-                'public'
+            $fileRequirementPath = CloudinaryService::uploadFile(
+                $request->file('file_requirement'),
+                'jasakampus/customer/' . $emailFolder . '/order'
             );
         }
 
