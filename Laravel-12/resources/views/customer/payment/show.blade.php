@@ -103,10 +103,14 @@
                     </button>
                 </form>
 
+
+
                 <a href="{{ url('/dashboard') }}"
                     class="block text-center mt-3 w-full px-5 py-3 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100">
                     Batalkan Pesanan
                 </a>
+
+
 
                 @elseif ($pesanan->status_pesanan === 'menunggu_pembayaran' && optional($pesanan->pembayaran)->snap_token)
                 <button type="button"
@@ -114,6 +118,20 @@
                     class="w-full px-5 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700">
                     Bayar Sekarang dengan Midtrans
                 </button>
+
+                @if (app()->environment('local'))
+                <form action="{{ route('customer.payment.simulate-success', $pesanan->id) }}"
+                    method="POST"
+                    class="mt-4">
+                    @csrf
+
+                    <button type="submit"
+                        onclick="return confirm('Simulasikan pembayaran berhasil? Fitur ini hanya untuk testing lokal.')"
+                        class="w-full px-5 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700">
+                        Skip Pembayaran / Simulasi Berhasil
+                    </button>
+                </form>
+                @endif
 
                 <form method="POST"
                     action="{{ route('customer.payment.pay', $pesanan->id) }}"

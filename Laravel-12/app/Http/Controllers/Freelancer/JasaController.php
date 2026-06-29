@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Services\NotifikasiService;
 use App\Models\VerifikasiFreelancer;
+use App\Services\CloudinaryService;
 
 class JasaController extends Controller
 {
@@ -66,7 +67,7 @@ class JasaController extends Controller
             'deskripsi' => ['required', 'string'],
             'harga' => ['required', 'numeric', 'min:1000'],
             'estimasi_pengerjaan' => ['required', 'string', 'max:100'],
-            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $thumbnailPath = null;
@@ -74,9 +75,9 @@ class JasaController extends Controller
         if ($request->hasFile('thumbnail')) {
             $emailFolder = str_replace(['@', '.'], '_', strtolower($request->user()->email));
 
-            $thumbnailPath = $request->file('thumbnail')->store(
-                'uploads/freelancer/' . $emailFolder . '/jasa',
-                'public'
+            $thumbnailPath = CloudinaryService::uploadImage(
+                $request->file('thumbnail'),
+                'jasakampus/freelancer/' . $emailFolder . '/jasa'
             );
         }
 
@@ -100,6 +101,6 @@ class JasaController extends Controller
 
         return redirect()
             ->route('freelancer.jasa.index')
-            ->with('success', 'Jasa berhasil dibuat.');
+            ->with('success', 'Jasa berhasil dibuat dan gambar tersimpan di Cloudinary.');
     }
 }

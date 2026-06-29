@@ -43,7 +43,33 @@
                         placeholder="Cari layanan..."
                         class="w-full h-9 rounded-md border-slate-300 text-sm focus:border-blue-500 focus:ring-blue-500">
                 </form>
-                <x-notifikasi-bell />
+                <div class="flex items-center gap-4">
+                    {{-- Lonceng Notifikasi --}}
+                    <x-notifikasi-bell />
+
+                    {{-- Icon Profil --}}
+                    <a href="{{ route('customer.profile.index') }}"
+                        class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center overflow-hidden font-bold shadow-sm group-hover:ring-4 group-hover:ring-blue-100 transition">
+                            @if (auth()->user()->foto_profil)
+                            <img src="{{ str_starts_with(auth()->user()->foto_profil, 'http') ? auth()->user()->foto_profil : asset('storage/' . auth()->user()->foto_profil) }}"
+                                alt="Foto Profil"
+                                class="w-full h-full object-cover">
+                            @else
+                            {{ strtoupper(substr(auth()->user()->nama ?? auth()->user()->email, 0, 1)) }}
+                            @endif
+                        </div>
+
+                        <div class="hidden md:block leading-tight">
+                            <p class="text-sm font-bold text-slate-800">
+                                {{ auth()->user()->nama ?? 'Customer' }}
+                            </p>
+                            <p class="text-xs text-slate-400">
+                                Profil
+                            </p>
+                        </div>
+                    </a>
+                </div>
             </div>
         </header>
 
@@ -86,7 +112,7 @@
                         <span>Progress</span>
                     </a>
 
-                    <a href="{{ route('profile.edit') }}"
+                    <a href="{{ route('customer.profile.index') }}"
                         class="flex items-center gap-4 px-6 py-4 rounded-xl font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
                         <span>👤</span>
                         <span>Profil</span>

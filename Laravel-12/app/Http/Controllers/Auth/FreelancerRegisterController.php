@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Services\CloudinaryService;
 
 class FreelancerRegisterController extends Controller
 {
@@ -64,7 +65,12 @@ class FreelancerRegisterController extends Controller
             'universitas' => ['required', 'string', 'max:255'],
             'program_studi' => ['nullable', 'string', 'max:255'],
             'file_ktm' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
-            'file_portofolio' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:5120'],
+            'file_portofolio' => [
+                'required',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf,doc,docx,ppt,pptx',
+                'max:1024',
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -76,9 +82,11 @@ class FreelancerRegisterController extends Controller
                 'public'
             );
 
-            $portofolioPath = $request->file('file_portofolio')->store(
-                'uploads/freelancer/' . $emailFolder . '/portofolio',
-                'public'
+            $emailFolder = str_replace(['@', '.'], '_', strtolower($request->email));
+
+            $portofolioPath = CloudinaryService::uploadFile(
+                $request->file('file_portofolio'),
+                'jasakampus/freelancer/' . $emailFolder . '/portfolio'
             );
 
             $user = User::create([

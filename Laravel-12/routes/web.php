@@ -34,7 +34,10 @@ use App\Models\Dispute;
 use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use App\Services\NotifikasiService;
-
+use App\Http\Controllers\Customer\ProgressController;
+use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
+use App\Models\Review;
+use App\Http\Controllers\Freelancer\ProfileController as FreelancerProfileController;
 
 
 
@@ -235,17 +238,101 @@ Route::get('/dashboard', function () {
     }
 
     if ($user->role === 'freelancer') {
-        return view('freelancer.dashboard');
+        $totalJasa = Jasa::where('id_freelancer', $user->id)->count();
+
+        $jasaAktif = Jasa::where('id_freelancer', $user->id)
+            ->where('status_jasa', 'active')
+            ->count();
+
+        $jasaPending = Jasa::where('id_freelancer', $user->id)
+            ->where('status_jasa', 'pending')
+            ->count();
+
+        $jasaDitolak = Jasa::where('id_freelancer', $user->id)
+            ->where('status_jasa', 'rejected')
+            ->count();
+
+        $pesananBerjalan = Pesanan::where('id_freelancer', $user->id)
+            ->whereIn('status_pesanan', [
+                'dibayar',
+                'diproses',
+                'revisi',
+                'menunggu_approve',
+            ])
+            ->count();
+
+        $pesananSelesai = Pesanan::where('id_freelancer', $user->id)
+            ->where('status_pesanan', 'selesai')
+            ->count();
+
+        $pesananDispute = Pesanan::where('id_freelancer', $user->id)
+            ->where('status_pesanan', 'dispute')
+            ->count();
+
+        $saldoDitahan = Pembayaran::whereHas('pesanan', function ($q) use ($user) {
+            $q->where('id_freelancer', $user->id);
+        })
+            ->where('status_escrow', 'ditahan')
+            ->sum('gross_amount');
+
+        $totalPendapatan = Pembayaran::whereHas('pesanan', function ($q) use ($user) {
+            $q->where('id_freelancer', $user->id);
+        })
+            ->where('status_escrow', 'dicairkan')
+            ->sum('gross_amount');
+
+        $ratingRataRata = Review::where('id_freelancer', $user->id)
+            ->avg('rating');
+
+        $totalReview = Review::where('id_freelancer', $user->id)
+            ->count();
+
+        $pesananTerbaru = Pesanan::with(['customer', 'jasa', 'pembayaran'])
+            ->where('id_freelancer', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $jasaTerbaru = Jasa::where('id_freelancer', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $aktivitasTerbaru = Notifikasi::where('id_user', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('freelancer.dashboard', compact(
+            'totalJasa',
+            'jasaAktif',
+            'jasaPending',
+            'jasaDitolak',
+            'pesananBerjalan',
+            'pesananSelesai',
+            'pesananDispute',
+            'saldoDitahan',
+            'totalPendapatan',
+            'ratingRataRata',
+            'totalReview',
+            'pesananTerbaru',
+            'jasaTerbaru',
+            'aktivitasTerbaru'
+        ));
     }
 
     $jasa = Jasa::with('freelancer')
+        ->withAvg('reviews as rating_rata_rata', 'rating')
+        ->withCount('reviews')
         ->where('status_jasa', 'active')
         ->whereHas('freelancer.verifikasiFreelancer', function ($q) {
             $q->where('status_verifikasi', 'approved');
         })
         ->latest()
-        ->limit(6)
-        ->get();
+        ->paginate(6)
+        ->withQueryString();
+
+
 
     return view('customer.dashboard', compact('jasa'));
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -474,20 +561,35 @@ Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(functi
         return redirect()->route('customer.order.index');
     })->name('payment.index');
 
-    Route::get('/reviews', function () {
-        return redirect()->route('customer.order.index');
-    })->name('review.index');
+    Route::get('/reviews', [ReviewController::class, 'index'])
+        ->name('review.index');
 
-    Route::get('/progress', function () {
-        return redirect()->route('customer.order.index');
-    })->name('progress.index');
+    Route::get('/progress', [ProgressController::class, 'index'])
+        ->name('progress.index');
 
     Route::post('/order/{pesanan}/payment/finish', [PaymentController::class, 'finish'])
         ->name('payment.finish');
 
     Route::get('/payments', [PaymentController::class, 'index'])
         ->name('payment.index');
+
+    Route::get('/profile', [CustomerProfileController::class, 'index'])
+        ->name('profile.index');
+
+    Route::put('/profile', [CustomerProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::get('/profile/verify-pin', [CustomerProfileController::class, 'verifyForm'])
+        ->name('profile.verify.form');
+
+    Route::post('/profile/verify-pin', [CustomerProfileController::class, 'verify'])
+        ->name('profile.verify');
+
+    Route::post('/order/{pesanan}/payment/simulate-success', [PaymentController::class, 'simulateSuccess'])
+        ->name('payment.simulate-success');
 });
+
+
 Route::post('/midtrans/notification', [PaymentController::class, 'notification'])
     ->name('midtrans.notification');
 
@@ -548,6 +650,30 @@ Route::middleware(['auth'])->prefix('freelancer')->name('freelancer.')->group(fu
 
     Route::post('/withdrawals', [FreelancerWithdrawalController::class, 'store'])
         ->name('withdrawals.store');
+
+    Route::get('/profile', [FreelancerProfileController::class, 'index'])
+        ->name('profile.index');
+
+    Route::put('/profile', [FreelancerProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::get('/profile/verify-pin', [FreelancerProfileController::class, 'verifyForm'])
+        ->name('profile.verify.form');
+
+    Route::post('/profile/verify-pin', [FreelancerProfileController::class, 'verify'])
+        ->name('profile.verify');
+
+    Route::get('/portfolio', function () {
+        $user = auth()->user();
+
+        abort_if(! $user || $user->role !== 'freelancer', 403);
+
+        $portofolios = $user->portofolios()
+            ->latest()
+            ->get();
+
+        return view('freelancer.portfolio.index', compact('portofolios'));
+    })->name('portfolio.index');
 });
 
 require __DIR__ . '/auth.php';

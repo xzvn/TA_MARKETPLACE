@@ -114,7 +114,7 @@
                                     @endphp
 
                                     @if ($portofolio)
-                                        <a href="{{ asset('storage/' . $portofolio->file_portofolio) }}"
+                                        <a href="{{ str_starts_with($portofolio->file_portofolio, 'http') ? $portofolio->file_portofolio : asset('storage/' . $portofolio->file_portofolio) }}"
                                            target="_blank"
                                            class="block text-blue-600 font-semibold hover:underline">
                                             Lihat Portofolio

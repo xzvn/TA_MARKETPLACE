@@ -56,6 +56,7 @@ class ReviewController extends Controller
             'ulasan' => ['nullable', 'string', 'max:1000'],
             'rekomendasi' => ['nullable', 'accepted'],
             'foto_review' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            
         ]);
 
         $fotoPath = $pesanan->review->foto_review ?? null;
@@ -90,8 +91,28 @@ class ReviewController extends Controller
             ]
         );
 
+
+
         return redirect()
             ->route('customer.order.show', $pesanan->id)
             ->with('success', 'Ulasan berhasil dikirim.');
+    }
+
+
+    public function index(Request $request): View
+    {
+        $user = $request->user();
+
+        abort_if(! $user || $user->role !== 'customer', 403);
+
+        $reviews = Review::with([
+            'pesanan.jasa.freelancer',
+            'freelancer',
+        ])
+            ->where('id_customer', $user->id)
+            ->latest()
+            ->get();
+
+        return view('customer.review.index', compact('reviews'));
     }
 }

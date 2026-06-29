@@ -23,6 +23,8 @@ class MarketplaceController extends Controller
         $this->authorizeCustomer($request);
 
         $query = Jasa::with('freelancer')
+            ->withAvg('reviews as rating_rata_rata', 'rating')
+            ->withCount('reviews')
             ->where('status_jasa', 'active')
             ->whereHas('freelancer.verifikasiFreelancer', function ($q) {
                 $q->where('status_verifikasi', 'approved');
@@ -42,16 +44,12 @@ class MarketplaceController extends Controller
             $query->where('kategori', $request->kategori);
         }
 
-        $jasa = Jasa::with('freelancer')
-            ->withAvg('reviews as rating_rata_rata', 'rating')
-            ->withCount('reviews')
-            ->where('status_jasa', 'active')
+        $jasa = $query
             ->latest()
             ->get();
 
-        return view('customer.marketplace', compact('jasa'));
+        return view('customer.dashboard', compact('jasa'));
     }
-
     public function show(Request $request, Jasa $jasa): View
     {
         $this->authorizeCustomer($request);
@@ -64,11 +62,12 @@ class MarketplaceController extends Controller
             'reviews.customer',
         ]);
 
-        $ratingJasa = Review::where('id_jasa', $jasa->id_jasa)
+        $ratingJasa = Review::where('id_jasa', $jasa->id)
             ->avg('rating');
 
-        $totalReviewJasa = Review::where('id_jasa', $jasa->id_jasa)
+        $totalReviewJasa = Review::where('id_jasa', $jasa->id)
             ->count();
+
 
 
         $sudahChat = Chat::where('id_jasa', $jasa->id)
@@ -76,6 +75,11 @@ class MarketplaceController extends Controller
             ->where('id_freelancer', $jasa->id_freelancer)
             ->exists();
 
-        return view('customer.detail-jasa', compact('jasa', 'sudahChat', 'ratingJasa', 'totalReviewJasa'));
+        return view('customer.detail-jasa', compact(
+            'jasa',
+            'sudahChat',
+            'ratingJasa',
+            'totalReviewJasa'
+        ));
     }
 }

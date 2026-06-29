@@ -14,6 +14,7 @@ use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
 
+
 class PaymentController extends Controller
 {
     private function authorizeCustomer(Request $request, Pesanan $pesanan): void
@@ -228,5 +229,40 @@ class PaymentController extends Controller
             'pembayaran',
             route('customer.order.show', $pesanan->id, false)
         );
+    }
+    public function simulateSuccess(Request $request, Pesanan $pesanan): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_if(! $user || $user->role !== 'customer', 403);
+        abort_if($pesanan->id_customer !== $user->id, 403);
+
+        // Pengaman: simulasi hanya boleh di local / sandbox
+        abort_if(app()->environment('production'), 403);
+
+        $pembayaran = $pesanan->pembayaran;
+
+        if (! $pembayaran) {
+            return back()->withErrors([
+                'payment' => 'Data pembayaran belum dibuat. Klik tombol Buat Pembayaran Midtrans dulu.',
+            ]);
+        }
+
+        $pembayaran->update([
+            'transaction_id' => 'SIM-' . now()->format('YmdHis'),
+            'payment_type' => 'simulation',
+            'transaction_status' => 'settlement',
+            'fraud_status' => 'accept',
+            'status_escrow' => 'ditahan',
+            'tanggal_bayar' => now(),
+        ]);
+
+        $pesanan->update([
+            'status_pesanan' => 'dibayar',
+        ]);
+
+        return redirect()
+            ->route('customer.order.show', $pesanan->id)
+            ->with('success', 'Pembayaran berhasil disimulasikan. Pesanan sekarang sudah masuk ke freelancer.');
     }
 }

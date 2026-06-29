@@ -62,11 +62,11 @@ $ratingText = $totalReview > 0
             <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-3 h-[420px] rounded-xl overflow-hidden bg-slate-100">
-                        @if ($jasa->thumbnail)
-                        <img src="{{ asset('storage/' . $jasa->thumbnail) }}"
-                            alt="{{ $jasa->nama_jasa }}"
+                        @if ($item->thumbnail)
+                        <img src="{{ str_starts_with($item->thumbnail, 'http') ? $item->thumbnail : asset('storage/' . $item->thumbnail) }}"
+                            alt="{{ $item->nama_jasa }}"
                             class="w-full h-full object-cover">
-                        @else
+                        @endif
                         <div class="w-full h-full bg-gradient-to-br from-blue-100 to-slate-200 flex items-center justify-center">
                             <span class="text-7xl">🖼️</span>
                         </div>
@@ -148,7 +148,7 @@ $ratingText = $totalReview > 0
                             {{ $portofolio->deskripsi }}
                         </p>
 
-                        <a href="{{ asset('storage/' . $portofolio->file_portofolio) }}"
+                        <a href="{{ str_starts_with($portofolio->file_portofolio, 'http') ? $portofolio->file_portofolio : asset('storage/' . $portofolio->file_portofolio) }}"
                             target="_blank"
                             class="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">
                             Lihat Portofolio
@@ -354,29 +354,33 @@ $ratingText = $totalReview > 0
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mt-5 text-center">
-                    {{-- CARD RATING --}}
-                    <div class="p-3 bg-slate-50 rounded-lg">
-                        <p class="text-2xl font-bold text-slate-900">
-                            {{ $totalReviewJasa > 0 ? number_format($ratingJasa, 1) : '0.0' }}
+                @php
+                $detailJasa = $jasa ?? $jasas;
+                $rating = $detailJasa->rating_rata_rata ?? null;
+                $totalReview = $detailJasa->reviews_count ?? 0;
+                @endphp
+
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="bg-slate-50 rounded-xl p-5 text-center">
+                        <p class="text-3xl font-bold text-slate-900">
+                            {{ $totalReviewJasa > 0 ? number_format((float) $ratingJasa, 1) : '0.0' }}
                         </p>
 
-                        <p class="text-xs text-slate-500">
+                        <p class="text-sm text-slate-600 mt-1">
                             Rating
                         </p>
 
-                        <p class="text-xs text-slate-400 mt-1">
+                        <p class="text-sm text-slate-400 mt-2">
                             {{ $totalReviewJasa > 0 ? $totalReviewJasa . ' review' : 'Belum ada review' }}
                         </p>
                     </div>
 
-                    {{-- CARD STATUS --}}
-                    <div class="p-3 bg-slate-50 rounded-lg">
-                        <p class="text-2xl font-bold text-slate-900">
+                    <div class="bg-slate-50 rounded-xl p-5 text-center">
+                        <p class="text-3xl font-bold text-slate-900">
                             Aktif
                         </p>
 
-                        <p class="text-xs text-slate-500">
+                        <p class="text-sm text-slate-600 mt-1">
                             Status
                         </p>
                     </div>

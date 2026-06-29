@@ -34,13 +34,9 @@
         <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition">
             <div class="relative h-44 bg-slate-100">
                 @if ($item->thumbnail)
-                <img src="{{ asset('storage/' . $item->thumbnail) }}"
+                <img src="{{ str_starts_with($item->thumbnail, 'http') ? $item->thumbnail : asset('storage/' . $item->thumbnail) }}"
                     alt="{{ $item->nama_jasa }}"
                     class="w-full h-full object-cover">
-                @else
-                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-slate-200">
-                    <span class="text-5xl">🖼️</span>
-                </div>
                 @endif
 
                 <button class="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-slate-600 shadow-sm">
@@ -60,20 +56,26 @@
                         </span>
                     </div>
 
+
+                    @php
+                    $rating = $item->rating_rata_rata ?? null;
+                    $totalReview = $item->reviews_count ?? 0;
+                    @endphp
+
+                    @if (!is_null($rating))
                     <div class="flex items-center gap-1 text-blue-600 font-bold">
                         <span>★</span>
-
-                        @if ($item->reviews_count > 0)
-                        <span>{{ number_format($item->rating_rata_rata, 1) }}</span>
+                        <span>{{ number_format((float) $rating, 1) }}</span>
                         <span class="text-xs text-slate-400 font-medium">
-                            ({{ $item->reviews_count }})
+                            ({{ $totalReview }} review)
                         </span>
-                        @else
-                        <span class="text-xs text-slate-400 font-medium">
-                            Belum ada rating
-                        </span>
-                        @endif
                     </div>
+                    @else
+                    <div class="flex items-center gap-1 text-slate-400 font-semibold">
+                        <span>★</span>
+                        <span>Belum ada rating</span>
+                    </div>
+                    @endif
                 </div>
 
                 <h3 class="font-bold text-slate-900 text-base leading-snug line-clamp-2 min-h-[44px]">
@@ -117,33 +119,49 @@
         @endforeach
     </div>
 
-    <div class="flex items-center justify-center gap-2 mt-8">
-        <button class="w-8 h-8 rounded-md border border-slate-300 bg-white text-slate-500">
+    @if ($jasa->hasPages())
+    <div class="mt-10 flex justify-center items-center gap-3">
+        {{-- Previous --}}
+        @if ($jasa->onFirstPage())
+        <span class="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 text-slate-300 cursor-not-allowed">
             ‹
-        </button>
+        </span>
+        @else
+        <a href="{{ $jasa->previousPageUrl() }}"
+            class="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-300 text-slate-600 hover:bg-blue-50">
+            ‹
+        </a>
+        @endif
 
-        <button class="w-8 h-8 rounded-md bg-blue-600 text-white text-sm font-bold">
-            1
-        </button>
+        {{-- Number --}}
+        @foreach ($jasa->getUrlRange(1, $jasa->lastPage()) as $page => $url)
+        @if ($page == $jasa->currentPage())
+        <span class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
+            {{ $page }}
+        </span>
+        @elseif ($page <= 3 || $page==$jasa->lastPage() || abs($page - $jasa->currentPage()) <= 1)
+                <a href="{{ $url }}"
+                class="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-300 text-slate-700 hover:bg-blue-50">
+                {{ $page }}
+                </a>
+                @elseif ($page == 4 && $jasa->currentPage() < $jasa->lastPage() - 2)
+                    <span class="px-2 text-slate-400">...</span>
+                    @endif
+                    @endforeach
 
-        <button class="w-8 h-8 rounded-md border border-slate-300 bg-white text-slate-600 text-sm">
-            2
-        </button>
-
-        <button class="w-8 h-8 rounded-md border border-slate-300 bg-white text-slate-600 text-sm">
-            3
-        </button>
-
-        <span class="px-2 text-slate-400">...</span>
-
-        <button class="w-8 h-8 rounded-md border border-slate-300 bg-white text-slate-600 text-sm">
-            12
-        </button>
-
-        <button class="w-8 h-8 rounded-md border border-slate-300 bg-white text-slate-500">
-            ›
-        </button>
+                    {{-- Next --}}
+                    @if ($jasa->hasMorePages())
+                    <a href="{{ $jasa->nextPageUrl() }}"
+                        class="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-300 text-slate-600 hover:bg-blue-50">
+                        ›
+                    </a>
+                    @else
+                    <span class="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 text-slate-300 cursor-not-allowed">
+                        ›
+                    </span>
+                    @endif
     </div>
+    @endif
     @else
     <div class="bg-white border border-slate-200 rounded-xl p-12 text-center">
         <div class="w-16 h-16 mx-auto rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-4">

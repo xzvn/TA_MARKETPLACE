@@ -98,6 +98,7 @@
                         type="file"
                         name="file_portofolio"
                         class="mt-1 w-full rounded-lg border-gray-300"
+                        accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.ppt,.pptx"
                         required>
 
                     ```
