@@ -40,7 +40,7 @@
         <div class="border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition bg-white">
             <div class="h-40 bg-slate-100 flex items-center justify-center">
                 @if ($item->thumbnail)
-                <img src="{{ str_starts_with($item->thumbnail, 'http') ? $item->thumbnail : asset('storage/' . $item->thumbnail) }}"
+                <img src="{{ \App\Services\CloudinaryService::mediaUrl($item->thumbnail) }}"
                     alt="{{ $item->nama_jasa }}"
                     class="w-full h-full object-cover">
                 @else

@@ -70,7 +70,7 @@
 
         @if ($pesanan->file_requirement)
         <div class="mt-6">
-            <a href="{{ asset('storage/' . $pesanan->file_requirement) }}"
+            <a href="{{ \App\Services\CloudinaryService::mediaUrl($pesanan->file_requirement) }}"
                 target="_blank"
                 class="inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200">
                 Lihat File Requirement

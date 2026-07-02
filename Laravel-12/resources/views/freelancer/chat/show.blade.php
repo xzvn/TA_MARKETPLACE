@@ -43,7 +43,7 @@
                     </p>
 
                     @if ($chat->lampiran)
-                    <a href="{{ asset('storage/' . $chat->lampiran) }}"
+                    <a href="{{ \App\Services\CloudinaryService::mediaUrl($chat->lampiran) }}"
                         target="_blank"
                         class="block mt-2 text-xs underline">
                         Lihat Lampiran
@@ -67,7 +67,7 @@
                     </p>
 
                     @if ($chat->lampiran)
-                    <a href="{{ asset('storage/' . $chat->lampiran) }}"
+                    <a href="{{ \App\Services\CloudinaryService::mediaUrl($chat->lampiran) }}"
                         target="_blank"
                         class="block mt-2 text-xs text-blue-600 underline">
                         Lihat Lampiran

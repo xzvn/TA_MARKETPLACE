@@ -62,15 +62,15 @@ $ratingText = $totalReview > 0
             <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-3 h-[420px] rounded-xl overflow-hidden bg-slate-100">
-                        @if ($item->thumbnail)
-                        <img src="{{ str_starts_with($item->thumbnail, 'http') ? $item->thumbnail : asset('storage/' . $item->thumbnail) }}"
-                            alt="{{ $item->nama_jasa }}"
+                        @if ($jasa->thumbnail)
+                        <img src="{{ \App\Services\CloudinaryService::mediaUrl($jasa->thumbnail) }}"
+                            alt="{{ $jasa->nama_jasa }}"
                             class="w-full h-full object-cover">
-                        @endif
+                        @else
                         <div class="w-full h-full bg-gradient-to-br from-blue-100 to-slate-200 flex items-center justify-center">
                             <span class="text-7xl">🖼️</span>
                         </div>
-                        @endif
+                      @endif
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-1 gap-4">
@@ -148,7 +148,7 @@ $ratingText = $totalReview > 0
                             {{ $portofolio->deskripsi }}
                         </p>
 
-                        <a href="{{ str_starts_with($portofolio->file_portofolio, 'http') ? $portofolio->file_portofolio : asset('storage/' . $portofolio->file_portofolio) }}"
+                        <a href="{{ \App\Services\CloudinaryService::mediaUrl($portofolio->file_portofolio) }}"
                             target="_blank"
                             class="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">
                             Lihat Portofolio
@@ -236,7 +236,7 @@ $ratingText = $totalReview > 0
 
                         @if ($review->foto_review)
                         <div class="mt-4">
-                            <img src="{{ asset('storage/' . $review->foto_review) }}"
+                            <img src="{{ \App\Services\CloudinaryService::mediaUrl($review->foto_review) }}"
                                 alt="Foto Review"
                                 class="w-full max-w-sm rounded-xl border border-slate-200">
                         </div>

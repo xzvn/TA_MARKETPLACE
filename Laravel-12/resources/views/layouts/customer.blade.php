@@ -52,7 +52,7 @@
                         class="flex items-center gap-3 group">
                         <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center overflow-hidden font-bold shadow-sm group-hover:ring-4 group-hover:ring-blue-100 transition">
                             @if (auth()->user()->foto_profil)
-                            <img src="{{ str_starts_with(auth()->user()->foto_profil, 'http') ? auth()->user()->foto_profil : asset('storage/' . auth()->user()->foto_profil) }}"
+                            <img src="{{ \App\Services\CloudinaryService::mediaUrl(auth()->user()->foto_profil) }}"
                                 alt="Foto Profil"
                                 class="w-full h-full object-cover">
                             @else

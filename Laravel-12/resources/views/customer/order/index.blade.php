@@ -48,7 +48,7 @@
                     <div class="flex gap-4">
                         <div class="w-24 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                             @if ($pesanan->jasa?->thumbnail)
-                            <img src="{{ asset('storage/' . $pesanan->jasa->thumbnail) }}"
+                            <img src="{{ \App\Services\CloudinaryService::mediaUrl($pesanan->jasa->thumbnail) }}"
                                 alt="{{ $pesanan->jasa->nama_jasa }}"
                                 class="w-full h-full object-cover">
                             @else

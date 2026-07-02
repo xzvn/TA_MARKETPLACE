@@ -148,7 +148,7 @@
                         class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold overflow-hidden hover:ring-4 hover:ring-blue-100 transition"
                         title="Profil Freelancer">
                         @if ($user->foto_profil)
-                        <<img src="{{ str_starts_with($user->foto_profil, 'http') ? $user->foto_profil : asset('storage/' . $user->foto_profil) }}"
+                        <img src="{{ \App\Services\CloudinaryService::mediaUrl($user->foto_profil) }}"
                             alt="Foto Profil"
                             class="w-full h-full object-cover">
                         @else

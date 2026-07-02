@@ -41,7 +41,7 @@
             <div class="flex items-center gap-5">
                 <div class="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center overflow-hidden text-3xl font-bold">
                     @if ($user->foto_profil)
-                    <img src="{{ str_starts_with($user->foto_profil, 'http') ? $user->foto_profil : asset('storage/' . $user->foto_profil) }}"
+                    <img src="{{ \App\Services\CloudinaryService::mediaUrl($user->foto_profil) }}"
                         alt="Foto Profil"
                         class="w-full h-full object-cover">
                     @else

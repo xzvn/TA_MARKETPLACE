@@ -91,7 +91,7 @@ default => 'bg-slate-100 text-slate-700',
                 <div class="p-6 flex flex-col md:flex-row gap-5">
                     <div class="w-full md:w-48 h-36 bg-slate-100 rounded-2xl overflow-hidden shrink-0">
                         @if ($pesanan->jasa?->thumbnail)
-                        <img src="{{ asset('storage/' . $pesanan->jasa->thumbnail) }}"
+                        <img src="{{ \App\Services\CloudinaryService::mediaUrl($pesanan->jasa->thumbnail) }}"
                             alt="{{ $pesanan->jasa->nama_jasa }}"
                             class="w-full h-full object-cover">
                         @else
@@ -138,7 +138,7 @@ default => 'bg-slate-100 text-slate-700',
                             </p>
 
                             @if ($pesanan->file_requirement)
-                            <a href="{{ asset('storage/' . $pesanan->file_requirement) }}"
+                            <a href="{{ \App\Services\CloudinaryService::mediaUrl($pesanan->file_requirement) }}"
                                 target="_blank"
                                 class="inline-block mt-3 text-sm font-semibold text-blue-600 hover:underline">
                                 Lihat File Requirement
@@ -244,7 +244,7 @@ default => 'bg-slate-100 text-slate-700',
                         @endif
 
                         @if ($progress->file_progress)
-                        <a href="{{ asset('storage/' . $progress->file_progress) }}"
+                        <a href="{{ \App\Services\CloudinaryService::mediaUrl($progress->file_progress) }}"
                             target="_blank"
                             class="inline-block mt-4 text-sm font-semibold text-blue-600 hover:underline">
                             Lihat Lampiran Progress
@@ -297,7 +297,7 @@ default => 'bg-slate-100 text-slate-700',
                     </p>
 
                     <div class="mt-5 flex flex-col sm:flex-row gap-3">
-                        <a href="{{ asset('storage/' . $hasil->file_hasil) }}"
+                        <a href="{{ \App\Services\CloudinaryService::mediaUrl($hasil->file_hasil) }}"
                             target="_blank"
                             class="px-5 py-3 bg-blue-600 text-white rounded-xl font-bold text-center hover:bg-blue-700">
                             Download Hasil Akhir
@@ -562,7 +562,7 @@ default => 'bg-slate-100 text-slate-700',
                 </p>
 
                 @if ($pesanan->dispute->bukti_dispute)
-                <a href="{{ asset('storage/' . $pesanan->dispute->bukti_dispute) }}"
+                <a href="{{ \App\Services\CloudinaryService::mediaUrl($pesanan->dispute->bukti_dispute) }}"
                     target="_blank"
                     class="inline-block mt-3 text-sm font-bold text-red-700 hover:underline">
                     Lihat Bukti Dispute

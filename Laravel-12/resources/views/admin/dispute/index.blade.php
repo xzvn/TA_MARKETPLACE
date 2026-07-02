@@ -313,7 +313,7 @@
                                         </p>
 
                                         @if ($chat->lampiran)
-                                        <a href="{{ asset('storage/' . $chat->lampiran) }}"
+                                        <a {{ \App\Services\CloudinaryService::mediaUrl($chat->lampiran) }}
                                             target="_blank"
                                             class="inline-block mt-3 text-xs font-bold underline {{ $isFreelancer ? 'text-white' : 'text-blue-600' }}">
                                             Lihat Lampiran Chat
@@ -375,7 +375,7 @@
 
                             <div class="mt-4 space-y-3">
                                 @if ($selectedDispute->bukti_dispute)
-                                <a href="{{ asset('storage/' . $selectedDispute->bukti_dispute) }}"
+                                <a href="{{ \App\Services\CloudinaryService::mediaUrl($selectedDispute->bukti_dispute) }}"
                                     target="_blank"
                                     class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50">
                                     <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">

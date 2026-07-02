@@ -103,7 +103,7 @@
 
                             <td class="px-6 py-4">
                                 <div class="space-y-2">
-                                    <a href="{{ asset('storage/' . $item->file_ktm) }}"
+                                    <a href="{{ \App\Services\CloudinaryService::mediaUrl($item->file_ktm) }}"
                                        target="_blank"
                                        class="block text-blue-600 font-semibold hover:underline">
                                         Lihat KTM
@@ -114,7 +114,7 @@
                                     @endphp
 
                                     @if ($portofolio)
-                                        <a href="{{ str_starts_with($portofolio->file_portofolio, 'http') ? $portofolio->file_portofolio : asset('storage/' . $portofolio->file_portofolio) }}"
+                                        <a href="{{ \App\Services\CloudinaryService::mediaUrl($portofolio->file_portofolio) }}"
                                            target="_blank"
                                            class="block text-blue-600 font-semibold hover:underline">
                                             Lihat Portofolio

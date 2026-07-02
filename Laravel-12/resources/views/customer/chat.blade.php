@@ -110,7 +110,7 @@ $lampiranChats = $chats->filter(fn($chat) => !empty($chat->lampiran));
 
                 <div class="p-5 space-y-3">
                     @forelse ($lampiranChats as $chat)
-                    <a href="{{ asset('storage/' . $chat->lampiran) }}"
+                    <a href="{{ \App\Services\CloudinaryService::mediaUrl($chat->lampiran) }}"
                         target="_blank"
                         class="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100">
                         <div class="min-w-0">
@@ -176,7 +176,7 @@ $lampiranChats = $chats->filter(fn($chat) => !empty($chat->lampiran));
                                 </p>
 
                                 @if ($chat->lampiran)
-                                <a href="{{ asset('storage/' . $chat->lampiran) }}"
+                                <a href="{{ \App\Services\CloudinaryService::mediaUrl($chat->lampiran) }}"
                                     target="_blank"
                                     class="inline-block mt-3 text-xs underline">
                                     Lihat Lampiran
@@ -208,7 +208,7 @@ $lampiranChats = $chats->filter(fn($chat) => !empty($chat->lampiran));
                                 </p>
 
                                 @if ($chat->lampiran)
-                                <a href="{{ asset('storage/' . $chat->lampiran) }}"
+                                <a {{ \App\Services\CloudinaryService::mediaUrl($chat->lampiran) }}
                                     target="_blank"
                                     class="inline-block mt-3 text-xs text-blue-600 underline">
                                     Lihat Lampiran

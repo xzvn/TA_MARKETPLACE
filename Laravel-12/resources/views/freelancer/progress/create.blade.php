@@ -330,7 +330,7 @@ $revisiTerakhir = $revisis
                     </p>
 
                     @if ($progress->file_progress)
-                    <a href="{{ asset('storage/' . $progress->file_progress) }}"
+                    <a href="{{ \App\Services\CloudinaryService::mediaUrl($progress->file_progress) }}"
                         target="_blank"
                         class="inline-block mt-4 text-sm font-semibold text-blue-600 hover:underline">
                         Lihat File Lampiran
